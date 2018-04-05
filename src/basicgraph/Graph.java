@@ -17,7 +17,7 @@ import util.GraphLoader;
  * The edges of the graph are not labeled.
  * Representation of edges is left abstract.
  * 
- * @author UCSD MOOC development team and YOU
+ * @author UCSD MOOC development team and Miri Yehezkel
  * 
  */
 
@@ -123,11 +123,12 @@ public abstract class Graph {
 	public List<Integer> degreeSequence() {
 		List<Integer> degreeSequence = new ArrayList<>();
 		if(numEdges > 0) { //if graph has edges:
+			//for each vertex, sum in and out neighbors and add to degreeSequence list
 			for(int v=0; v < numVertices; v++) {
 				int degree = getNeighbors(v).size();
 				degree += getInNeighbors(v).size();
 				degreeSequence.add(degree);
-			}
+			}//sort result in reverse order
 			degreeSequence.sort(Collections.reverseOrder());
 		}
 		return degreeSequence;
