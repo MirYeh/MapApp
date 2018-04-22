@@ -1,20 +1,12 @@
-/**
- * @author UCSD MOOC development team and YOU
- * 
- * A class which reprsents a graph of geographic locations
- * Nodes in the graph are intersections between 
- *
- */
 package roadgraph;
 
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -31,9 +23,9 @@ import util.GraphLoader;
  */
 public class MapGraph {
 	/**
-	 * A Map of geographic locations (key) and their edges (value).
-	 */
-	private Map<GeographicPoint, Set<DirectedEdge>> map;
+	 * A Map of geographic locations and their corresponding Vertices.
+	 *///Using a map to reduce search-time of a location
+	private Map<GeographicPoint, MapVertex> vertices;
 	
 	/**
 	 * Number of edges on Map
@@ -45,7 +37,7 @@ public class MapGraph {
 	 * Create a new empty MapGraph 
 	 */
 	public MapGraph() {
-		map = new HashMap<>();
+		vertices = new HashMap<>();
 	}
 	
 	/**
@@ -53,16 +45,21 @@ public class MapGraph {
 	 * @return The number of vertices in the graph.
 	 */
 	public int getNumVertices() {
-		return map.size();
+		return vertices.size();
 	}
 	
 	/**
-	 * Return the intersections, which are the vertices in this graph.
+	 * Get the intersections, which are the vertices in this graph.
 	 * @return The vertices in this graph as GeographicPoints
-	 */
+	 *///returning a copy in order to protect map data
 	public Set<GeographicPoint> getVertices() {
-		//returning a new HashSet in order to protect Map data
-		return new HashSet<>(map.keySet());
+		Set<GeographicPoint> copyOfVertices = new HashSet<>();
+		Iterator<GeographicPoint> it = vertices.keySet().iterator();
+		while(it.hasNext()) {
+			GeographicPoint pt = it.next();
+			copyOfVertices.add(new GeographicPoint(pt.getX(), pt.getY()));
+		}
+		return copyOfVertices;
 	}
 	
 	/** Add a node corresponding to an intersection at a Geographic Point
@@ -73,9 +70,9 @@ public class MapGraph {
 	 * was already in the graph, or the parameter is null).
 	 */
 	public boolean addVertex(GeographicPoint location) {
-		if (location == null || map.containsKey(location))
+		if (location == null || vertices.containsKey(location))
 			return false;
-		map.put(location, new HashSet<>());
+		vertices.put(location, new MapVertex(location));
 		return true;
 	}
 
@@ -102,25 +99,39 @@ public class MapGraph {
 	 */
 	public void addEdge(GeographicPoint from, GeographicPoint to, String roadName,
 					String roadType, double length) throws IllegalArgumentException {
-		//Checks if values are valid, throws an exception with corresponding message
+		//throws exception with corresponding message
+		verifyEdgeFields(from, to, roadName, roadType, length);
+		vertices.get(from).addEdge(new DirectedEdge(roadName, roadType, length, from, to));
+		numEdges++;
+	}
+	
+	/**
+	 * Checks if fields are valid, throws an exception with corresponding message if needed
+	 * @param from The starting point of the edge
+	 * @param to The ending point of the edge
+	 * @param roadName The name of the road
+	 * @param roadType The type of the road
+	 * @param length The length of the road
+	 * @throws IllegalArgumentException If the points have not already been
+	 *   added as nodes to the graph, if any of the arguments is null,
+	 *   or if the length is less than 0.
+	 */
+	private void verifyEdgeFields(GeographicPoint from, GeographicPoint to, String roadName,
+			String roadType, double length) throws IllegalArgumentException {
 		if (! notNull(from, to))
 			throw new IllegalArgumentException("One or more GeographicPoint is null");
 		if (! notNull(roadName, roadType) )
 			throw new IllegalArgumentException("Road must contain values of name and type");
-		if (length == 0)
-			throw new IllegalArgumentException("Length must be greater than 0");
-		if (!map.containsKey(from) || !map.containsKey(to))
+		if (length < 0)
+			throw new IllegalArgumentException("Length must be greater than or equal to 0");
+		if (! vertices.containsKey(from) || ! vertices.containsKey(to))
 			throw new IllegalArgumentException("One or more GeographicPoint doesn't exist in Map");
-		
-		//add edge
-		numEdges++;
-		map.get(from).add(new DirectedEdge(roadName, roadType, length, from, to));
 	}
 	
 	/**
 	 * Helper method, checks if objects are not null.
 	 * @param objs Objects to check
-	 * @return {@code true} if objects are not null, {@code false} otherwise.
+	 * @return {@code true} if the objects are not null, {@code false} otherwise.
 	 */
 	private boolean notNull(Object... objs) {
 		for (Object obj : objs)
@@ -151,19 +162,54 @@ public class MapGraph {
 	 * @param goal The goal location
 	 * @param nodeSearched A hook for visualization.  See assignment instructions for how to use it.
 	 * @return The list of intersections that form the shortest (unweighted)
-	 *   path from start to goal (including both start and goal).
+	 *   path from start to goal (including both start and goal), or {@code null} if path doesn't exist.
 	 */
-	public List<GeographicPoint> bfs(GeographicPoint start, 
-					GeographicPoint goal, Consumer<GeographicPoint> nodeSearched) {
-		//Maps geoPoints to their "parent" start geoPoint
-		Map<GeographicPoint, GeographicPoint> parentMap = new HashMap<>();
+	public List<GeographicPoint> bfs(GeographicPoint start, GeographicPoint goal,
+					Consumer<GeographicPoint> nodeSearched) {
+		if (isValidGeographicPoints(start, goal)) {
+			//maps points to their "parent" point
+			Map<GeographicPoint, GeographicPoint> parentMap = new HashMap<>();
+			if (hasBfsPath(start, goal, parentMap, nodeSearched))
+				return reconstructPath(start, goal, parentMap);
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * Performs a breadth-first search on Map and finds the shortest (unweighted)
+	 *  path from start to goal.
+	 * @param start {@link GeographicPoint} start on Map
+	 * @param goal {@link GeographicPoint} goal on Map
+	 * @param parentMap A Map to reconstruct the path taken
+	 * @param nodeSearched A hook for visualization
+	 * @return {@code true} if found path, {@code false} otherwise.
+	 */
+	private boolean hasBfsPath(GeographicPoint start, GeographicPoint goal, 
+			Map<GeographicPoint, GeographicPoint> parentMap,
+			Consumer<GeographicPoint> nodeSearched) {
+		Queue<GeographicPoint> toExplore = new LinkedList<>();
+		Set<GeographicPoint> visited = new HashSet<>();
 		
-		//if search is unsuccessful, return empty list
-		if (! bfsSearch(start, goal, parentMap, nodeSearched))
-			return new ArrayList<>();
+		visited.add(start);
+		toExplore.add(start);
 		
-		//Reconstruct path
-		return reconstructPath(start, goal, parentMap);
+		while(!toExplore.isEmpty()) {
+			GeographicPoint curr = toExplore.poll();
+			if (curr.equals(goal))
+				return true;
+			
+			Iterator<DirectedEdge> it = vertices.get(curr).getEdges().iterator();
+			while(it.hasNext()) {
+				GeographicPoint next = it.next().getEnd();
+				if (visited.add(next)) { //geoPoint not searched already
+					parentMap.put(next, curr);
+					toExplore.add(next);
+					nodeSearched.accept(next); //Visualization of search
+				}
+			}//inner while
+		}//outer while
+		return false;
 	}
 	
 	/**
@@ -175,10 +221,9 @@ public class MapGraph {
 	 */
 	private List<GeographicPoint> reconstructPath(GeographicPoint start, GeographicPoint goal, 
 			Map<GeographicPoint, GeographicPoint> parentMap) {
-		
 		LinkedList<GeographicPoint> path = new LinkedList<>();
 		GeographicPoint curr = goal;
-		while(curr != start) {
+		while(!curr.equals(start)) {
 			path.addFirst(curr);
 			curr = parentMap.get(curr);
 		}
@@ -186,47 +231,10 @@ public class MapGraph {
 		return path;
 	}
 	
-	/**
-	 * Performs a breadth-first search on Map and finds the shortest (unweighted)
-	 *  path from start to goal.
-	 * @param start {@link GeographicPoint} start on Map
-	 * @param goal {@link GeographicPoint} goal on Map
-	 * @param parentMap A Map to reconstruct the path taken
-	 * @param nodeSearched A hook for visualization
-	 * @return {@code true} if found path, {@code false} otherwise.
-	 */
-	private boolean bfsSearch(GeographicPoint start, GeographicPoint goal, 
-					Map<GeographicPoint, GeographicPoint> parentMap,
-					Consumer<GeographicPoint> nodeSearched) {
-		Queue<GeographicPoint> queue = new LinkedList<>();
-		Set<GeographicPoint> visited = new HashSet<>();
-		queue.add(start);
-		
-		while(!queue.isEmpty()) {
-			GeographicPoint curr = queue.poll();
-			if (curr.equals(goal))
-				return true;
-			Set<DirectedEdge> edges = map.get(curr);
-			if (edges == null) {
-				continue;
-			}
-			Iterator<DirectedEdge> it = map.get(curr).iterator();
-			while(it.hasNext()) {
-				GeographicPoint next = it.next().getEnd();
-				if (visited.add(next)) { //geoPoint not searched already
-					parentMap.put(next, curr);
-					queue.add(next);
-					nodeSearched.accept(next); //Visualization of search
-				}
-			}//inner while
-		}//outer while
-		return false;
-	}
 	
 	
-	
-	/** Find the path from start to goal using Dijkstra's algorithm
-	 * 
+	/** 
+	 * Find the path from start to goal using Dijkstra's algorithm.
 	 * @param start The starting location
 	 * @param goal The goal location
 	 * @return The list of intersections that form the shortest path from 
@@ -234,34 +242,87 @@ public class MapGraph {
 	 */
 	public List<GeographicPoint> dijkstra(GeographicPoint start, GeographicPoint goal) {
 		// Dummy variable for calling the search algorithms
-		// You do not need to change this method.
         Consumer<GeographicPoint> temp = (x) -> {};
         return dijkstra(start, goal, temp);
 	}
 	
-	/** Find the path from start to goal using Dijkstra's algorithm
-	 * 
+	
+	/** 
+	 * Find the path from start to goal using Dijkstra's algorithm.
 	 * @param start The starting location
 	 * @param goal The goal location
 	 * @param nodeSearched A hook for visualization.  See assignment instructions for how to use it.
 	 * @return The list of intersections that form the shortest path from 
-	 *   start to goal (including both start and goal).
+	 *   start to goal (including both start and goal), or {@code null} if path doesn't exist.
 	 */
-	public List<GeographicPoint> dijkstra(GeographicPoint start, 
-										  GeographicPoint goal, Consumer<GeographicPoint> nodeSearched)
-	{
-		// TODO: Implement this method in WEEK 4
-
-		// Hook for visualization.  See writeup.
-		//nodeSearched.accept(next.getLocation());
-		
+	public List<GeographicPoint> dijkstra(GeographicPoint start, GeographicPoint goal, 
+			Consumer<GeographicPoint> nodeSearched) {
+		if (isValidGeographicPoints(start, goal)) {
+			//maps points to their "parent" point
+			Map<GeographicPoint, GeographicPoint> parentMap = new HashMap<>();
+			if (hasDijkstraPath(start, goal, parentMap, nodeSearched))
+				return reconstructPath(start, goal, parentMap);
+		}
 		return null;
 	}
 	
+	/**
+	 * Performs Dijkstra's search on Map and finds the shortest weighted
+	 *  path from start to goal.
+	 * @param start The starting location
+	 * @param goal The goal location
+	 * @param parentMap A Map to reconstruct the path taken
+	 * @param nodeSearched A hook for visualization.  See assignment instructions for how to use it.
+	 * @return {@code true} if found path, {@code false} otherwise.
+	 */
+	private boolean hasDijkstraPath(GeographicPoint start, GeographicPoint goal, 
+			Map<GeographicPoint, GeographicPoint> parentMap,
+			Consumer<GeographicPoint> nodeSearched) {
+		PriorityQueue<WeightedMapVertex> toExplore = new PriorityQueue<>();
+		//maps points to their weight
+		Map<GeographicPoint, Double> visited = new HashMap<>();
+		visited.put(start, 0.0);
+		toExplore.add(new WeightedMapVertex(vertices.get(start), 0.0));
+		
+		while (! toExplore.isEmpty()) {
+			WeightedMapVertex currVertex = toExplore.poll();
+			if (currVertex.getGeoPoint().equals(goal))
+				return true;
+			
+			double currWeight = currVertex.getWeight();
+			Iterator<DirectedEdge> it = currVertex.getEdges().iterator();
+			while(it.hasNext()) {
+				DirectedEdge edge = it.next();
+				GeographicPoint next = edge.getEnd();
+				Double nextWeight = currWeight + edge.getLength();
+				if (hasLowerPriority(edge, nextWeight, visited)) {
+					visited.put(next, nextWeight);
+					parentMap.put(next, currVertex.getGeoPoint());
+					toExplore.add(new WeightedMapVertex(vertices.get(next), nextWeight));
+					nodeSearched.accept(next); //visualization for search
+				}
+			}//inner while
+		}//outer while
+		return false;
+	}
 	
+	/**
+	 * Checks if end-point of edge has lower priority than found beforehand.
+	 * @param edge DirectedEdge connected to end-point
+	 * @param nextWeight Sum of weight of the end-point by route taken
+	 * @param visited A Map of visited points and their weights
+	 * @return {@code true} if end-point has lower weight than found before, {@code false} otherwise.
+	 */
+	private boolean hasLowerPriority(DirectedEdge edge, double nextWeight, 
+			Map<GeographicPoint, Double> visited) {
+		GeographicPoint next = edge.getEnd();
+		Double visitedWeight = visited.get(next);
+		return visitedWeight == null || nextWeight < visitedWeight;
+		
+	}
 	
-	/** Find the path from start to goal using A-Star search
-	 * 
+	/** 
+	 * Find the path from start to goal using A-Star search
 	 * @param start The starting location
 	 * @param goal The goal location
 	 * @return The list of intersections that form the shortest path from 
@@ -273,25 +334,38 @@ public class MapGraph {
         return aStarSearch(start, goal, temp);
 	}
 	
-	/** Find the path from start to goal using A-Star search
-	 * 
+	
+	/** 
+	 * Find the path from start to goal using A-Star search
 	 * @param start The starting location
 	 * @param goal The goal location
 	 * @param nodeSearched A hook for visualization.  See assignment instructions for how to use it.
 	 * @return The list of intersections that form the shortest path from 
-	 *   start to goal (including both start and goal).
+	 *   start to goal (including both start and goal), or {@code null} if path doesn't exist.
 	 */
-	public List<GeographicPoint> aStarSearch(GeographicPoint start, 
-											 GeographicPoint goal, Consumer<GeographicPoint> nodeSearched)
-	{
+	public List<GeographicPoint> aStarSearch(GeographicPoint start, GeographicPoint goal, 
+			Consumer<GeographicPoint> nodeSearched) {
 		// TODO: Implement this method in WEEK 4
 		
-		// Hook for visualization.  See writeup.
-		//nodeSearched.accept(next.getLocation());
+		
+		
+		//nodeSearched.accept(next); //visualization for search
 		
 		return null;
 	}
 
+	
+
+	/**
+	 * Checks if GeographicPoints are valid.
+	 * @param start start The starting location
+	 * @param goal The goal location
+	 * @return {@code true} if GeographicPoints are valid, {@code false} otherwise.
+	 */
+	private boolean isValidGeographicPoints(GeographicPoint start, GeographicPoint goal) {
+		return start != null && goal != null;
+	}
+	
 	
 	
 	public static void main(String[] args) {
@@ -301,15 +375,23 @@ public class MapGraph {
 		System.out.println("DONE. \nLoading the map...");
 		GraphLoader.loadRoadMap("data/testdata/simpletest.map", firstMap);
 		
+		System.out.println(separator);
+		
 		GeographicPoint startfirstMap = new GeographicPoint(4, 1);
 		GeographicPoint goalfirstMap = new GeographicPoint(8, -1);
-		System.out.printf("\nSearching data/testdata/simpletest.map from (%s) to (%s): \nResult: %s \n",
+		System.out.printf("\nBFS search on data/testdata/simpletest.map \nFrom (%s) To (%s): \nResult: %s \n",
 				startfirstMap, goalfirstMap, firstMap.bfs(startfirstMap, goalfirstMap));
+		
+		System.out.println(separator);
+		
+		System.out.printf("\nDijkstra search on data/testdata/simpletest.map \nFrom (%s) To (%s): \nResult: %s \n",
+				startfirstMap, goalfirstMap, firstMap.dijkstra(startfirstMap, goalfirstMap));
 		
 		System.out.println("DONE.");
 		
-		//test UCSD map:
 		
+		//test UCSD map:
+		/*
 		System.out.println(separator);
 		MapGraph ucsdTest = new MapGraph();
 		GraphLoader.loadRoadMap("data/maps/ucsd.map", ucsdTest);
@@ -319,6 +401,7 @@ public class MapGraph {
 		
 		System.out.printf("Searching ucsd.map from (%s) to (%s): \nResult: %s \n",
 				start, goal, ucsdTest.bfs(start, goal));
+		*/
 		
 		// You can use this method for testing.  
 		

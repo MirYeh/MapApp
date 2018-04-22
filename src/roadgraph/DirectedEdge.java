@@ -13,12 +13,29 @@ import geography.GeographicPoint;
  *
  */
 class DirectedEdge {
+	/** Name of road in map	 */
 	private String roadName;
+	
+	/** Type of road in map (residential, motorway etc.) */
 	private String roadType;
+	
+	/** Length of road */
 	private double length;
+	
+	/** Start location on map */
 	private GeographicPoint start;
+	
+	/** End location on map */
 	private GeographicPoint end;
 	
+	/**
+	 * Constructs a directed edge with data
+	 * @param roadName Name of road
+	 * @param roadType Type of road (residential, motorway etc.)
+	 * @param length Length of road
+	 * @param start Start location on map
+	 * @param end End location on map
+	 */
 	DirectedEdge(String roadName, String roadType, double length, 
 			GeographicPoint start, GeographicPoint end) {
 		setRoadName(roadName);
@@ -28,20 +45,20 @@ class DirectedEdge {
 		setEnd(end);
 	}
 	
-	public String getRoadName() { return roadName; }
-	public void setRoadName(String roadName) { this.roadName = roadName; }
+	String getRoadName() { return roadName; }
+	void setRoadName(String roadName) { this.roadName = roadName; }
 	
-	public String getRoadType() { return roadType; }
-	public void setRoadType(String roadType) { this.roadType = roadType; }
+	String getRoadType() { return roadType; }
+	void setRoadType(String roadType) { this.roadType = roadType; }
 	
-	public double getLength() { return length; }
-	public void setLength(double length) { this.length = length; }
+	double getLength() { return length; }
+	void setLength(double length) { this.length = length; }
 	
-	public GeographicPoint getStart() { return start; }
-	public void setStart(GeographicPoint start) { this.start = start; }
+	GeographicPoint getStart() { return start; }
+	void setStart(GeographicPoint start) { this.start = start; }
 	
-	public GeographicPoint getEnd() { return end; }
-	public void setEnd(GeographicPoint end) { this.end = end; }
+	GeographicPoint getEnd() { return end; }
+	void setEnd(GeographicPoint end) { this.end = end; }
 	
 	/**
 	 * Determines object hashCode by its attributes.
@@ -56,6 +73,8 @@ class DirectedEdge {
 	 */
 	@Override
 	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
 		if (obj != null && obj instanceof DirectedEdge) {
 			DirectedEdge other = (DirectedEdge) obj;
 			if (this.roadName.equals(other.roadName)
