@@ -30,7 +30,10 @@ public class MarkerManager {
     private HashMap<geography.GeographicPoint, Marker> markerMap;
     private ArrayList<geography.GeographicPoint> markerPositions;
     private GoogleMap map;
-    protected static String startURL = "http://maps.google.com/mapfiles/kml/pal3/icon40.png";
+    
+    //Markers taken from http://kml4earth.appspot.com/icons.html
+    protected static String startURL = "https://maps.google.com/mapfiles/kml/paddle/go.png";
+    		//Old Icon: "http://maps.google.com/mapfiles/kml/pal3/icon40.png";
     protected static String destinationURL = "http://maps.google.com/mapfiles/kml/pal2/icon5.png";
     protected static String SELECTED_URL = "http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png";
     protected static String markerURL = "http://maps.google.com/mapfiles/kml/paddle/blu-diamond-lv.png";
