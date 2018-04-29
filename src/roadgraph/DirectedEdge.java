@@ -60,17 +60,13 @@ class DirectedEdge {
 	GeographicPoint getEnd() { return end; }
 	void setEnd(GeographicPoint end) { this.end = end; }
 	
-	/**
-	 * Determines object hashCode by its attributes.
-	 */
+	/** Determines object hashCode by its attributes. */
 	@Override
 	public int hashCode() {
 		return Objects.hash(roadName, roadType, length, start, end);
 	}
 	
-	/**
-	 * Checks if Objects are equal by checking all attributes. 
-	 */
+	/** Checks if Objects are equal by checking all attributes. */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

@@ -13,13 +13,9 @@ import geography.GeographicPoint;
  *
  */
 class MapVertex {
-	/**
-	 * A GeographicPoint (latitude and longitude) on a map
-	 */
+	/** A GeographicPoint (latitude and longitude) on a map */
 	private GeographicPoint geoPoint;
-	/**
-	 * A {@link Set} of DirectedEdges from this vertex to another
-	 */
+	/** A {@link Set} of DirectedEdges from this vertex to another */
 	private Set<DirectedEdge> edges;
 	
 	/**

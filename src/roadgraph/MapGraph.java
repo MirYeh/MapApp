@@ -18,7 +18,8 @@ import util.GraphLoader;
  * A class which represents a directed graph of geographic locations.<br>
  * Nodes in the graph are intersections between.
  * 
- * @author UCSD MOOC development team and Miri Yehezkel
+ * @author UCSD MOOC development team
+ * @author Miri Yehezkel
  * 
  */
 public class MapGraph {
@@ -27,9 +28,7 @@ public class MapGraph {
 	 *///Using a map to reduce search-time of a location
 	private Map<GeographicPoint, MapVertex> vertices;
 	
-	/**
-	 * Number of edges on Map
-	 */
+	/** Number of edges on Map */
 	private int numEdges;
 	
 	
@@ -99,7 +98,7 @@ public class MapGraph {
 	 */
 	public void addEdge(GeographicPoint from, GeographicPoint to, String roadName,
 					String roadType, double length) throws IllegalArgumentException {
-		//throws exception with corresponding message
+		//throws IllegalArgumentException with corresponding message
 		verifyEdgeFields(from, to, roadName, roadType, length);
 		vertices.get(from).addEdge(new DirectedEdge(roadName, roadType, length, from, to));
 		numEdges++;
@@ -119,13 +118,19 @@ public class MapGraph {
 	private void verifyEdgeFields(GeographicPoint from, GeographicPoint to, String roadName,
 			String roadType, double length) throws IllegalArgumentException {
 		if (! notNull(from, to))
-			throw new IllegalArgumentException("One or more GeographicPoint is null");
+			throw new IllegalArgumentException("One or more GeographicPoint is null",
+					new Throwable("from=" + from + ", to=" + to));
 		if (! notNull(roadName, roadType) )
-			throw new IllegalArgumentException("Road must contain values of name and type");
+			throw new IllegalArgumentException("Road must contain values of name and type",
+					new Throwable("roadName=" + roadName + ", roadType=" + roadType));
 		if (length < 0)
 			throw new IllegalArgumentException("Length must be greater than or equal to 0");
-		if (! vertices.containsKey(from) || ! vertices.containsKey(to))
-			throw new IllegalArgumentException("One or more GeographicPoint doesn't exist in Map");
+		if (! vertices.containsKey(from))
+			throw new IllegalArgumentException("Start GeographicPoint doesn't exist in Map",
+					new Throwable("from=" + from));
+		if (! vertices.containsKey(to))
+			throw new IllegalArgumentException("Goal GeographicPoint doesn't exist in Map",
+					new Throwable("to=" + to));
 	}
 	
 	/**
@@ -143,8 +148,12 @@ public class MapGraph {
 	
 	
 	
-	/** Find the path from start to goal using breadth first search
-	 * 
+	/* Search MapGraph Methods: */
+	
+	
+	
+	/** 
+	 * Find the path from start to goal using breadth first search
 	 * @param start The starting location
 	 * @param goal The goal location
 	 * @return The list of intersections that form the shortest (unweighted)
@@ -156,18 +165,18 @@ public class MapGraph {
         return bfs(start, goal, temp);
 	}
 	
-	/** Find the path from start to goal using breadth first search
-	 * 
+	/** 
+	 * Find the path from start to goal using breadth first search
 	 * @param start The starting location
 	 * @param goal The goal location
-	 * @param nodeSearched A hook for visualization.  See assignment instructions for how to use it.
+	 * @param nodeSearched A hook for visualization
 	 * @return The list of intersections that form the shortest (unweighted)
 	 *   path from start to goal (including both start and goal), or {@code null} if path doesn't exist.
 	 */
 	public List<GeographicPoint> bfs(GeographicPoint start, GeographicPoint goal,
 					Consumer<GeographicPoint> nodeSearched) {
 		if (isValidGeographicPoints(start, goal)) {
-			//maps points to their "parent" point
+			//maps points to their "parent" point to find path taken
 			Map<GeographicPoint, GeographicPoint> parentMap = new HashMap<>();
 			if (hasBfsPath(start, goal, parentMap, nodeSearched))
 				return reconstructPath(start, goal, parentMap);
@@ -196,16 +205,17 @@ public class MapGraph {
 		
 		while(!toExplore.isEmpty()) {
 			GeographicPoint curr = toExplore.poll();
+			nodeSearched.accept(curr); //Visualization of search
 			if (curr.equals(goal))
 				return true;
 			
 			Iterator<DirectedEdge> it = vertices.get(curr).getEdges().iterator();
 			while(it.hasNext()) {
 				GeographicPoint next = it.next().getEnd();
-				if (visited.add(next)) { //geoPoint not searched already
+				boolean notVisited = visited.add(next);
+				if (notVisited) {
 					parentMap.put(next, curr);
 					toExplore.add(next);
-					nodeSearched.accept(next); //Visualization of search
 				}
 			}//inner while
 		}//outer while
@@ -251,14 +261,14 @@ public class MapGraph {
 	 * Find the path from start to goal using Dijkstra's algorithm.
 	 * @param start The starting location
 	 * @param goal The goal location
-	 * @param nodeSearched A hook for visualization.  See assignment instructions for how to use it.
+	 * @param nodeSearched A hook for visualization
 	 * @return The list of intersections that form the shortest path from 
 	 *   start to goal (including both start and goal), or {@code null} if path doesn't exist.
 	 */
 	public List<GeographicPoint> dijkstra(GeographicPoint start, GeographicPoint goal, 
 			Consumer<GeographicPoint> nodeSearched) {
 		if (isValidGeographicPoints(start, goal)) {
-			//maps points to their "parent" point
+			//maps points to their "parent" point to find path taken
 			Map<GeographicPoint, GeographicPoint> parentMap = new HashMap<>();
 			if (hasDijkstraPath(start, goal, parentMap, nodeSearched))
 				return reconstructPath(start, goal, parentMap);
@@ -272,7 +282,7 @@ public class MapGraph {
 	 * @param start The starting location
 	 * @param goal The goal location
 	 * @param parentMap A Map to reconstruct the path taken
-	 * @param nodeSearched A hook for visualization.  See assignment instructions for how to use it.
+	 * @param nodeSearched A hook for visualization
 	 * @return {@code true} if found path, {@code false} otherwise.
 	 */
 	private boolean hasDijkstraPath(GeographicPoint start, GeographicPoint goal, 
@@ -286,7 +296,10 @@ public class MapGraph {
 		
 		while (! toExplore.isEmpty()) {
 			WeightedMapVertex currVertex = toExplore.poll();
-			if (currVertex.getGeoPoint().equals(goal))
+			GeographicPoint currPt = currVertex.getGeoPoint();
+			nodeSearched.accept(currPt); //visualization for search
+			
+			if (currPt.equals(goal))
 				return true;
 			
 			double currWeight = currVertex.getWeight();
@@ -299,12 +312,12 @@ public class MapGraph {
 					visited.put(next, nextWeight);
 					parentMap.put(next, currVertex.getGeoPoint());
 					toExplore.add(new WeightedMapVertex(vertices.get(next), nextWeight));
-					nodeSearched.accept(next); //visualization for search
 				}
 			}//inner while
 		}//outer while
 		return false;
 	}
+	
 	
 	/**
 	 * Checks if end-point of edge has lower priority than found beforehand.
@@ -318,7 +331,6 @@ public class MapGraph {
 		GeographicPoint next = edge.getEnd();
 		Double visitedWeight = visited.get(next);
 		return visitedWeight == null || nextWeight < visitedWeight;
-		
 	}
 	
 	/** 
@@ -339,21 +351,68 @@ public class MapGraph {
 	 * Find the path from start to goal using A-Star search
 	 * @param start The starting location
 	 * @param goal The goal location
-	 * @param nodeSearched A hook for visualization.  See assignment instructions for how to use it.
+	 * @param nodeSearched A hook for visualization
 	 * @return The list of intersections that form the shortest path from 
 	 *   start to goal (including both start and goal), or {@code null} if path doesn't exist.
 	 */
 	public List<GeographicPoint> aStarSearch(GeographicPoint start, GeographicPoint goal, 
 			Consumer<GeographicPoint> nodeSearched) {
-		// TODO: Implement this method in WEEK 4
-		
-		
-		
-		//nodeSearched.accept(next); //visualization for search
-		
+		if (isValidGeographicPoints(start, goal)) {
+			Map<GeographicPoint, GeographicPoint> parentMap = new HashMap<>();
+			if (hasAStarPath(start, goal, parentMap, nodeSearched))
+				return reconstructPath(start, goal, parentMap);
+		}
 		return null;
 	}
 
+	/**
+	 * 
+	 * Performs A* search on Map and finds the shortest weighted
+	 *  path from start to goal.
+	 * @param start The starting location
+	 * @param goal The goal location
+	 * @param parentMap A Map to reconstruct the path taken
+	 * @param nodeSearched A hook for visualization
+	 * @return {@code true} if found path, {@code false} otherwise.
+	 */
+	private boolean hasAStarPath(GeographicPoint start, GeographicPoint goal, 
+			Map<GeographicPoint, GeographicPoint> parentMap,
+			Consumer<GeographicPoint> nodeSearched) {
+		PriorityQueue<WeightedMapVertex> toExplore = new PriorityQueue<>();
+		//maps points to their total weight
+		Map<GeographicPoint, Double> visited = new HashMap<>();
+		
+		visited.put(start, 0.0);
+		toExplore.add(new WeightedMapVertex(vertices.get(start), 0.0, 0.0));
+		
+		while(! toExplore.isEmpty()) {
+			WeightedMapVertex currVertex = toExplore.poll();
+			GeographicPoint currPt = currVertex.getGeoPoint();
+			nodeSearched.accept(currPt); //visualization for search
+			
+			if (currPt.equals(goal))
+				return true;
+			
+			Double currWeight = currVertex.getWeight();
+			Iterator<DirectedEdge> it = currVertex.getEdges().iterator();
+			while(it.hasNext()) {
+				DirectedEdge edge = it.next();
+				GeographicPoint next = edge.getEnd();
+				//if total weight less than found before
+				Double visitedTotal = visited.get(next);
+				double predictedDistance = next.distance(goal);
+				double nextWeight = edge.getLength() + currWeight;
+				double totalWeight = predictedDistance + nextWeight;
+				if (visitedTotal == null || totalWeight < visitedTotal ) {
+					visited.put(next, totalWeight);
+					parentMap.put(next, currVertex.getGeoPoint());
+					toExplore.add(new WeightedMapVertex(
+							vertices.get(next), nextWeight, predictedDistance));
+				}
+			}//inner while
+		}//outer while
+		return false;
+	}
 	
 
 	/**
@@ -368,6 +427,15 @@ public class MapGraph {
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public static void main(String[] args) {
 		final String separator = "\n=============================================\n";
 		System.out.print("Making a new map...");
@@ -379,13 +447,33 @@ public class MapGraph {
 		
 		GeographicPoint startfirstMap = new GeographicPoint(4, 1);
 		GeographicPoint goalfirstMap = new GeographicPoint(8, -1);
+		
+		//BFS TEST
+		/*
 		System.out.printf("\nBFS search on data/testdata/simpletest.map \nFrom (%s) To (%s): \nResult: %s \n",
 				startfirstMap, goalfirstMap, firstMap.bfs(startfirstMap, goalfirstMap));
 		
 		System.out.println(separator);
+		*/
 		
+		//Dijkstra's search
+		/*
 		System.out.printf("\nDijkstra search on data/testdata/simpletest.map \nFrom (%s) To (%s): \nResult: %s \n",
 				startfirstMap, goalfirstMap, firstMap.dijkstra(startfirstMap, goalfirstMap));
+		
+		System.out.println(separator);
+		*/
+		//A* search
+		/*System.out.printf("\nA* search on data/testdata/simpletest.map \nFrom (%s) To (%s): \nResult: %s \n",
+				startfirstMap, goalfirstMap, firstMap.aStarSearch(startfirstMap, goalfirstMap));
+		
+		System.out.println(separator);
+		*/
+		
+		
+		
+		
+		
 		
 		System.out.println("DONE.");
 		
