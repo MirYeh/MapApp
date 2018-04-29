@@ -71,6 +71,6 @@ public class CLabel<T> extends Label {
 
 	public void setItem(T newItem) {
 		item.set(newItem);
-    updateView(item.get(), true);
+		updateView(item.get(), true);
 	}
 }

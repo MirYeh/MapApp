@@ -1,10 +1,3 @@
-/** JavaFX application which interacts with the Google
- * Maps API to provide a mapping interface with which
- * to test and develop graph algorithms and data structures
- * 
- * @author UCSD MOOC development team
- *
- */
 package application;
 
 import javafx.application.Application;
@@ -49,18 +42,26 @@ import gmapsfx.javascript.object.LatLong;
 import gmapsfx.javascript.object.MapOptions;
 import gmapsfx.javascript.object.MapTypeIdEnum;
 
-public class MapApp extends Application
-implements MapComponentInitializedListener {
 
+/** 
+ * JavaFX application which interacts with the Google
+ * Maps API to provide a mapping interface with which
+ * to test and develop graph algorithms and data structures
+ * 
+ * @author UCSD MOOC development team
+ * @author Miri Yehezkel
+ *
+ */
+public class MapApp extends Application implements MapComponentInitializedListener {
+	
 	protected GoogleMapView mapComponent;
+	
 	protected GoogleMap map;
-	/**
-	 * Application layout with top, left, right, bottom and center positions
-	 */
+	
+	/** Application layout with top, left, right, bottom and center positions */
 	protected BorderPane bpLayout;
-	/**
-	 * Primary {@link Stage} of Map application
-	 */
+	
+	/** Primary {@link Stage} of Map application */
 	protected Stage primaryStage;
 
 	// CONSTANTS
@@ -85,25 +86,23 @@ implements MapComponentInitializedListener {
 		mapComponent = new GoogleMapView();
 		mapComponent.addMapInitializedListener(this);
 
-		// initialize tabs for data fetching and route controls
-		//Tab routeTab = new Tab("Routing");
-
-		// create components for fetch tab
+		
+		// create components and layout for fetch data
+		//TODO check controller
 		Button fetchDataButton = new Button("Fetch Data");
-		Button displayIntersectionsButton = new Button("Show Intersections");
 		TextField fetchDataTextField = new TextField();
-		ComboBox<DataSet> mapComboBox = new ComboBox<DataSet>();
-
+		HBox fetchLayout = getFetchDataLayout(fetchDataTextField, fetchDataButton);
+		
+		//TODO check controller
+		Button displayIntersectionsButton = new Button("Show Intersections");
+		ComboBox<DataSet> mapComboBox = new ComboBox<>();
 		// set on mouse pressed, this fixes Windows 10 / Surface bug
 		mapComboBox.setOnMousePressed( e -> {
 			mapComboBox.requestFocus();
 		});
 		
-		//TextField and Button at the bottom-left corner, used to name and fetch map data
-		HBox fetchControls = getBottomBox(fetchDataTextField, fetchDataButton);
-
 		//Top-right corner, used to choose map and show intersections
-		VBox fetchBox = getFetchBox(displayIntersectionsButton, mapComboBox);
+		VBox displayBox = getDisplayMapLayout(displayIntersectionsButton, mapComboBox);
 
 
 		// create components for fetch tab
@@ -126,9 +125,7 @@ implements MapComponentInitializedListener {
 
 		// Radio buttons for selecting search algorithm
 		final ToggleGroup searchToggleGroup = new ToggleGroup();
-
 		List<RadioButton> searchOptions = setupToggle(searchToggleGroup);
-
 
 		// Select and marker managers for route choosing and marker display/visuals
 		// should only be one instance (singleton)
@@ -144,7 +141,11 @@ implements MapComponentInitializedListener {
 		selectManager.setPointLabel(pointLabel);
 		selectManager.setStartLabel(startLabel);
 		selectManager.setDestinationLabel(destLabel);
-		setupRouteTab(routeTab, fetchBox, startLabel, destLabel, pointLabel, 
+		
+		// initialize tabs for data fetching and route controls
+		Tab routeTab = new Tab("Routing");
+		
+		setupRouteTab(routeTab, displayBox, startLabel, destLabel, pointLabel, 
 				routeButton, hideRouteButton, resetButton, visualizationButton, 
 				startButton, destButton, searchOptions);
 
@@ -166,7 +167,7 @@ implements MapComponentInitializedListener {
 
 		// add components to border pane
 		bpLayout.setRight(routeTabPane);
-		bpLayout.setBottom(fetchControls);
+		bpLayout.setBottom(fetchLayout);
 		bpLayout.setCenter(mapComponent);
 
 		Scene scene = new Scene(bpLayout);
@@ -204,118 +205,96 @@ implements MapComponentInitializedListener {
 		setupJSAlerts(mapComponent.getWebView());
 		
 	}
+	
+	
 
 
 	// SETTING UP THE VIEW
 
-	private HBox getBottomBox(TextField tf, Button fetchButton) {
-		HBox box = new HBox();
-		tf.setPrefWidth(FETCH_COMPONENT_WIDTH);
-		box.getChildren().add(tf);
-		fetchButton.setPrefWidth(FETCH_COMPONENT_WIDTH);
-		box.getChildren().add(fetchButton);
-		return box;
-	}
 	/**
-	 * Setup layout and controls for Fetch tab
-	 * @param fetchTab
-	 * @param fetchButton
-	 * @param displayButton
-	 * @param tf
+	 * Creates a horizontal layout for fetching map data.
+	 * @param tf {@link TextField} to input name of map
+	 * @param fetchButton {@link Button} to start fetch of data
+	 * @return a {@link HBox} with given TextField and Button.
 	 */
-	private VBox getFetchBox(Button displayButton, ComboBox<DataSet> cb) {
-		// add button to tab, rethink design and add V/HBox for content
-		VBox verticalBox = new VBox();
-		HBox horizontalBox = new HBox();
-
-
-
-		HBox intersectionControls = new HBox();
-		//        cb.setMinWidth(displayButton.getWidth());
-		cb.setPrefWidth(FETCH_COMPONENT_WIDTH);
-		intersectionControls.getChildren().add(cb);
-		displayButton.setPrefWidth(FETCH_COMPONENT_WIDTH);
-		intersectionControls.getChildren().add(displayButton);
-
-		horizontalBox.getChildren().add(verticalBox);
-		verticalBox.getChildren().add(new Label("Choose map file: "));
-		verticalBox.getChildren().add(intersectionControls);
-
-		//v.setSpacing(MARGIN_VAL);
-		return verticalBox;
+	private HBox getFetchDataLayout(TextField tf, Button fetchButton) {
+		HBox layout = new HBox();
+		tf.setPrefWidth(FETCH_COMPONENT_WIDTH);
+		fetchButton.setPrefWidth(FETCH_COMPONENT_WIDTH);
+		layout.getChildren().addAll(tf, fetchButton);
+		return layout;
+	}
+	
+	
+	
+	/**
+	 * Creates a vertical layout for displaying map intersections.
+	 * @param displayIntersectionsButton {@link Button} to start display
+	 * @param mapComboBox {@link ComboBox} options to display
+	 * @return a {@link VBox} with given Button and ComboBox.
+	 */
+	private VBox getDisplayMapLayout(Button displayIntersectionsButton, ComboBox<DataSet> mapComboBox) {
+		VBox vLayout = new VBox();
+		HBox hLayout = new HBox();
+		//sets button and comboBox side by side 
+		mapComboBox.setPrefWidth(FETCH_COMPONENT_WIDTH);
+		displayIntersectionsButton.setPrefWidth(FETCH_COMPONENT_WIDTH);
+		hLayout.getChildren().addAll(mapComboBox, displayIntersectionsButton);
+		//sets label above hLayout
+		vLayout.getChildren().addAll(new Label("Choose map file:"), hLayout);
+		return vLayout;
 	}
 
 	/**	
 	 * Setup layout of route tab and controls
-	 *
-	 * @param routeTab
-	 * @param box
 	 */
-	private void setupRouteTab(Tab routeTab, VBox fetchBox, Label startLabel, Label endLabel, Label pointLabel,
-			Button showButton, Button hideButton, Button resetButton, Button vButton, Button startButton,
-			Button destButton, List<RadioButton> searchOptions) {
+	private void setupRouteTab(Tab routeTab, VBox displayMapLayout, Label startGeoData, Label destGeoData, 
+			Label currentGeoData, Button routeButton, Button hideRouteButton, Button resetButton, 
+			Button vizualButton, Button startPtButton, Button destPtButton, 
+			List<RadioButton> searchOptions) {
+		
+		HBox h = new HBox(); //Set up tab layout
+		VBox v = new VBox(); //v is inner container of h
+		
+		Label startPointLabel = new Label("Start Position:");
+		HBox startComponentsLayout = new HBox(MARGIN_VAL * 2, startGeoData,startPtButton);
 
-		//set up tab layout
-		HBox h = new HBox();
-		// v is inner container
-		VBox v = new VBox();
+		Label destPointLabel = new Label("Goal Position:");
+		HBox destComponentsLayout = new HBox(MARGIN_VAL * 2, destGeoData, destPtButton);
+		
+		HBox routeShowHideLayout = new HBox(MARGIN_VAL * 2, routeButton, hideRouteButton);
+		
+		Label currentPointLabel = new Label("Selected Position:");
+		VBox currentPointLayout = new VBox(currentPointLabel, currentGeoData);
+		
+		VBox rbLayout = new VBox(2);
+		for (RadioButton rb : searchOptions)
+			rbLayout.getChildren().add(rb);
+			
+		
+		v.getChildren().addAll(displayMapLayout,
+				startPointLabel,
+				startComponentsLayout,
+				destPointLabel,
+				destComponentsLayout,
+				routeShowHideLayout,
+				rbLayout,
+				vizualButton,
+				currentPointLayout
+			);
+		
+		
 		h.getChildren().add(v);
-
-
-
-		VBox selectLeft = new VBox();
-
-
-		selectLeft.getChildren().add(startLabel);
-		HBox startBox = new HBox();
-		startBox.getChildren().add(startLabel);
-		startBox.getChildren().add(startButton);
-		startBox.setSpacing(20);
-
-		HBox destinationBox = new HBox();
-		destinationBox.getChildren().add(endLabel);
-		destinationBox.getChildren().add(destButton);
-		destinationBox.setSpacing(20);
-
-
-		VBox markerBox = new VBox();
-		Label markerLabel = new Label("Selected Marker : ");
-
-
-		markerBox.getChildren().add(markerLabel);
-
-		markerBox.getChildren().add(pointLabel);
-
-		VBox.setMargin(markerLabel, new Insets(MARGIN_VAL,MARGIN_VAL,MARGIN_VAL,MARGIN_VAL));
-		VBox.setMargin(pointLabel, new Insets(0,MARGIN_VAL,MARGIN_VAL,MARGIN_VAL));
-		VBox.setMargin(fetchBox, new Insets(0,0,MARGIN_VAL*2,0));
-
-		HBox showHideBox = new HBox();
-		showHideBox.getChildren().add(showButton);
-		showHideBox.getChildren().add(hideButton);
-		showHideBox.setSpacing(2*MARGIN_VAL);
-
-		v.getChildren().add(fetchBox);
-		v.getChildren().add(new Label("Start Position : "));
-		v.getChildren().add(startBox);
-		v.getChildren().add(new Label("Goal : "));
-		v.getChildren().add(destinationBox);
-		v.getChildren().add(showHideBox);
-		for (RadioButton rb : searchOptions) {
-			v.getChildren().add(rb);
-		}
-		v.getChildren().add(vButton);
-		VBox.setMargin(showHideBox, new Insets(MARGIN_VAL,MARGIN_VAL,MARGIN_VAL,MARGIN_VAL));
-		VBox.setMargin(vButton, new Insets(MARGIN_VAL,MARGIN_VAL,MARGIN_VAL,MARGIN_VAL));
-		vButton.setDisable(true);
-		v.getChildren().add(markerBox);
-		//v.getChildren().add(resetButton);
-
-
+		
+		vizualButton.setDisable(true);
+		HBox.setMargin(v, new Insets(MARGIN_VAL,MARGIN_VAL,MARGIN_VAL,MARGIN_VAL));
+		
 		routeTab.setContent(h);
 
 
 	}
+	
+	
 
 	private void setupJSAlerts(WebView webView) {
 		webView.getEngine().setOnAlert( e -> {
@@ -335,29 +314,37 @@ implements MapComponentInitializedListener {
 		});
 	}
 
+	/**
+	 * Sets up a {@link ToggleGroup} of available search options (BFS, Dijkstra and A*).
+	 * @param group a {@link ToggleGroup} to associate searches to
+	 * @return A {@link LinkedList} representing the search options as {@link RadioButton}(s).
+	 */
 	private LinkedList<RadioButton> setupToggle(ToggleGroup group) {
+		final String bfs = "BFS";
+		final String dijkstra = "Dijkstra";
+		final String aStar = "A*";
 
-		// Use Dijkstra as default
-		RadioButton rbD = new RadioButton("Dijkstra");
-		rbD.setUserData("Dijkstra");
-		rbD.setSelected(true);
+		RadioButton rbBFS = new RadioButton(bfs);
+		RadioButton rbDijkstra = new RadioButton(dijkstra);
+		RadioButton rbAStar = new RadioButton(aStar);
+		
+		rbBFS.setUserData(bfs);
+		rbDijkstra.setUserData(dijkstra);
+		rbAStar.setUserData(aStar);
 
-		RadioButton rbA = new RadioButton("A*");
-		rbA.setUserData("A*");
+		rbAStar.setSelected(true); //default option
 
-		RadioButton rbB = new RadioButton("BFS");
-		rbB.setUserData("BFS");
-
-		rbB.setToggleGroup(group);
-		rbD.setToggleGroup(group);
-		rbA.setToggleGroup(group);
-		return new LinkedList<RadioButton>(Arrays.asList(rbB, rbD, rbA));
+		rbBFS.setToggleGroup(group);
+		rbDijkstra.setToggleGroup(group);
+		rbAStar.setToggleGroup(group);
+		return new LinkedList<>(Arrays.asList(rbBFS, rbDijkstra, rbAStar));
 	}
 
 
 	/*
 	 * METHODS FOR SHOWING DIALOGS/ALERTS
 	 */
+	
 
 	public void showLoadStage(Stage loadStage, String text) {
 		loadStage.initModality(Modality.APPLICATION_MODAL);
@@ -373,6 +360,8 @@ implements MapComponentInitializedListener {
 		loadStage.setScene(loadScene);
 		loadStage.show();
 	}
+	
+	
 
 	public static void showInfoAlert(String header, String content) {
 		Alert alert = getInfoAlert(header, content);
