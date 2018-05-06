@@ -1,4 +1,4 @@
-var delay = 300;
+var delay = 100;
 var map, markers;
 var markerURL = "http://maps.google.com/mapfiles/kml/paddle/red-diamond-lv.png";
 var destURL = "http://maps.google.com/mapfiles/kml/pal2/icon5.png";

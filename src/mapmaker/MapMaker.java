@@ -13,26 +13,43 @@ public class MapMaker {
         this.bounds = bounds;
     }
 
+	//TODO remove test prints for .jar
+    void testPrint(String s) {
+    	System.out.print(s);
+    }
+    
     public boolean parseData(String filename) {
+    	testPrint("\nin MapMaker.parseData()\n");
         DataFetcher fetcher = new DataFetcher(bounds);
+        testPrint("fetching data from JsonObject: ");
         JsonObject data = fetcher.getData();
-
+        
+        testPrint("Data fetched! \n Getting elements... \n");
+        
         JsonArray elements = data.getJsonArray("elements");
 
+        testPrint("working on each 'node' elements... ");
         for (JsonObject elem : elements.getValuesAs(JsonObject.class)) {
             if (elem.getString("type").equals("node")) {
-                nodes.put(elem.getInt("id"), new Location(elem.getJsonNumber("lat").doubleValue(), elem.getJsonNumber("lon").doubleValue()));
+                nodes.put(elem.getInt("id"), 
+                		new Location(elem.getJsonNumber("lat").doubleValue(), 
+                				elem.getJsonNumber("lon").doubleValue()));
             }
         }
-
+        
+        testPrint("done with for loop \n");
+        
         PrintWriter outfile;
         try {
+        	testPrint("Writing to file " + filename + " \n");
             outfile = new PrintWriter(filename);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
 
+        testPrint("working on each 'way' elements... ");
+        
         for (JsonObject elem : elements.getValuesAs(JsonObject.class)) {
             if (elem.getString("type").equals("way")) {
                 String street = elem.getJsonObject("tags").getString("name", "");
@@ -53,6 +70,9 @@ public class MapMaker {
                 }
             }
         }
+        
+        testPrint("Done with for loop \n");
+        
         outfile.close();
         return true;
     }

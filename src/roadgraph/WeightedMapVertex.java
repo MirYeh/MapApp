@@ -67,4 +67,5 @@ class WeightedMapVertex extends MapVertex implements Comparable<WeightedMapVerte
 	}
 	
 	
+	
 }

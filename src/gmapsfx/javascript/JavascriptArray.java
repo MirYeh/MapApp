@@ -42,8 +42,8 @@ public class JavascriptArray extends JavascriptObject {
     
     public Object  get(int idx) {
         Object obj = getJSObject().getSlot(idx);
-        if (obj instanceof JSObject && content.containsKey((JSObject) obj)) {
-            return (JavascriptObject) content.get((JSObject) obj);
+        if (obj instanceof JSObject && content.containsKey(obj)) {
+            return content.get(obj);
         }
         return obj;
     }
@@ -70,8 +70,8 @@ public class JavascriptArray extends JavascriptObject {
     public Object pop() {
         //Object obj = jsObject.getSlot(jsLen - 1);
         Object obj = invokeJavascript("pop");
-        if (obj instanceof JSObject && content.containsKey((JSObject) obj)) {
-            return (JavascriptObject) content.get((JSObject) obj);
+        if (obj instanceof JSObject && content.containsKey(obj)) {
+            return content.get(obj);
         }
         return obj;
     }
@@ -93,8 +93,8 @@ public class JavascriptArray extends JavascriptObject {
     //shift() 	Removes the first element of an array, and returns that element
     public Object shift() {
         Object obj = invokeJavascript("shift");
-        if (obj instanceof JSObject && content.containsKey((JSObject) obj)) {
-            return (JavascriptObject) content.get((JSObject) obj);
+        if (obj instanceof JSObject && content.containsKey(obj)) {
+            return content.get(obj);
         }
         return obj;
     }

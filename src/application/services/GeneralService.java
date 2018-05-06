@@ -20,7 +20,6 @@ import mapmaker.MapMaker;
 
 // class for map and general application services (file IO, etc.)
 public class GeneralService {
-//	private static boolean singleton = false;
 	private int currentState;
 	private SelectManager selectManager;
 	private GoogleMap map;
@@ -34,18 +33,14 @@ public class GeneralService {
     private List<String> filenames;
     DataSet dataSet;
 
-    public GeneralService(GoogleMapView mapComponent, SelectManager selectManager, MarkerManager markerManager) {
+    public GeneralService(GoogleMapView mapComponent, SelectManager selectManager, 
+    		MarkerManager markerManager) {
         // get map from GoogleMapView
     	this.map = mapComponent.getMap();
     	this.selectManager = selectManager;
         this.markerManager = markerManager;
         this.markerManager.setMap(map);
-    	filenames = new ArrayList<String>();
-
-    	// uncomment to click map and print coordinates
-    	/*mapComponent.addUIEventHandler(UIEventType.click, (JSObject obj) -> {
-    		System.out.println(obj.getMember("latLng"));
-    	});*/
+    	filenames = new ArrayList<>();
     }
 
 
@@ -138,32 +133,26 @@ public class GeneralService {
         };
 
 
-
-        Alert fetchingAlert = MapApp.getInfoAlert("Loading : ", "Fetching data for current map area...");
+        Alert fetchingAlert = MapApp.getInfoAlert("Loading: ", "Fetching data for current map area...");
         task.setOnSucceeded( e -> {
           if(task.getValue().equals(fName)) {
                addDataFile(fName);
-
                cb.getItems().add(new DataSet(fName));
-               if(fetchingAlert.isShowing()) {
+               if(fetchingAlert.isShowing())
             	   fetchingAlert.close();
-               }
-               MapApp.showInfoAlert("Fetch completed : ", "Data set : \"" + fName + "\" written to file!");
-               // System.out.println("Fetch Task Succeeded");
+               MapApp.showInfoAlert("Fetch completed: ", "Data set: \"" + fName + "\" written to file!");
 
            }
-           else {
-               // System.out.println("Something went wrong, data not written to file : Task succeeded but fName returned differently");
-
-           }
-
            button.setDisable(false);
-
         });
 
-
         task.setOnFailed( e -> {
-
+        	if(fetchingAlert.isShowing())
+         	   fetchingAlert.close();
+        	//TODO remove test print
+        	MapApp.showErrorAlert("Fetch failed: ", e.getSource().getMessage());
+        	System.err.printf("\n\nArray size: %s \nException message: %s \nException Cause: %s \n",
+        			arr.length, e.getSource().getException(), e.getSource().getException().getCause());
         });
 
         task.setOnRunning(e -> {

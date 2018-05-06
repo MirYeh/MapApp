@@ -5,7 +5,6 @@
  */
 
 package application;
-import application.services.GeneralService;
 import geography.GeographicPoint;
 import gmapsfx.javascript.object.Marker;
 
@@ -41,18 +40,16 @@ public class SelectManager {
 
     public void setAndDisplayData(DataSet data) {
     	setDataSet(data);
-        //TODO - maybe if markerManager!= null?
         if(markerManager != null) {
             markerManager.displayDataSet();
         }
         else {
-        	System.err.println("Error : Marker Manager is null.");
+        	System.err.println("Error: Marker Manager is null.");
         }
     }
 
     public void setMarkerManager(MarkerManager manager) { this.markerManager = manager; }
     public void setPoint(GeographicPoint point, Marker marker) {
-        // System.out.println("inSetPoint.. passed : " + point);
     	pointLabel.setItem(point);
         selectedMarker = marker;
     }

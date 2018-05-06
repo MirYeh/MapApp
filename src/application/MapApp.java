@@ -88,12 +88,10 @@ public class MapApp extends Application implements MapComponentInitializedListen
 
 		
 		// create components and layout for fetch data
-		//TODO check controller
 		Button fetchDataButton = new Button("Fetch Data");
 		TextField fetchDataTextField = new TextField();
 		HBox fetchLayout = getFetchDataLayout(fetchDataTextField, fetchDataButton);
 		
-		//TODO check controller
 		Button displayIntersectionsButton = new Button("Show Intersections");
 		ComboBox<DataSet> mapComboBox = new ComboBox<>();
 		// set on mouse pressed, this fixes Windows 10 / Surface bug
@@ -116,7 +114,7 @@ public class MapApp extends Application implements MapComponentInitializedListen
 				new CLabel<>("Empty.", new ImageView(startImage), null);
 		CLabel<geography.GeographicPoint> destLabel = 
 				new CLabel<>("Empty.", new ImageView(destImage), null);
-		//TODO -- hot fix
+		
 		startLabel.setMinWidth(180);
 		destLabel.setMinWidth(180);
 		

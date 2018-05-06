@@ -32,7 +32,10 @@ public class DataSet {
     	this.graph = graph;
     }
 
-    public void setRoads(HashMap<geography.GeographicPoint,HashSet<geography.RoadSegment>>  roads) { this.roads = roads; }
+    public void setRoads(HashMap<geography.GeographicPoint,HashSet<geography.RoadSegment>>  roads) {
+    	this.roads = roads;
+    }
+    
     public roadgraph.MapGraph getGraph(){ return graph; }
     
     /** Return the intersections in this graph.
@@ -52,13 +55,14 @@ public class DataSet {
     	}
     }
     
-    public HashMap<geography.GeographicPoint,HashSet<geography.RoadSegment>>  getRoads() { return this.roads; }
+    public HashMap<geography.GeographicPoint,HashSet<geography.RoadSegment>>  getRoads() {
+    	return this.roads;
+    }
 
     public void initializeGraph() {
         graph = new roadgraph.MapGraph();
-        roads = new HashMap<geography.GeographicPoint, HashSet<geography.RoadSegment>>();
-        intersections = new HashSet<GeographicPoint>();
-        //TODO: change to use intersections for points in graph.
+        roads = new HashMap<>();
+        intersections = new HashSet<>();
     	GraphLoader.loadRoadMap(filePath, graph, roads, intersections);
     }
 

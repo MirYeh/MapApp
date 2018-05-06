@@ -219,7 +219,7 @@ public class GoogleMap extends JavascriptObject {
     private String registerEventHandler(GFXEventHandler h) {
         //checkInitialized();
         if (!registeredOnJS) {
-            JSObject doc = (JSObject) runtime.execute("document");
+            JSObject doc = runtime.execute("document");
             doc.setMember("jsHandlers", jsHandlers);
             registeredOnJS = true;
         }

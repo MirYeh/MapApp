@@ -9,10 +9,8 @@ package application;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 import gmapsfx.javascript.event.UIEventType;
-import gmapsfx.javascript.object.Animation;
 import gmapsfx.javascript.object.GoogleMap;
 import gmapsfx.javascript.object.LatLong;
 import gmapsfx.javascript.object.Marker;
@@ -21,6 +19,7 @@ import javafx.scene.control.Button;
 import gmapsfx.javascript.object.LatLongBounds;
 import netscape.javascript.JSObject;
 
+//Map icons taken from http://kml4earth.appspot.com/icons.html
 public class MarkerManager {
 
     private static final double DEFAULT_Z = 2;
@@ -31,9 +30,7 @@ public class MarkerManager {
     private ArrayList<geography.GeographicPoint> markerPositions;
     private GoogleMap map;
     
-    //Markers taken from http://kml4earth.appspot.com/icons.html
     protected static String startURL = "https://maps.google.com/mapfiles/kml/paddle/go.png";
-    		//Old Icon: "http://maps.google.com/mapfiles/kml/pal3/icon40.png";
     protected static String destinationURL = "http://maps.google.com/mapfiles/kml/pal2/icon5.png";
     protected static String SELECTED_URL = "http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png";
     protected static String markerURL = "http://maps.google.com/mapfiles/kml/paddle/blu-diamond-lv.png";
@@ -56,7 +53,6 @@ public class MarkerManager {
         markerPositions = null;
     }
     public MarkerManager(GoogleMap map, SelectManager selectManager) {
-    	// TODO -- parameters?
         dataSet = null;
 
     }
@@ -67,19 +63,16 @@ public class MarkerManager {
      *
      * @param vButton
      */
-    public void setVisButton(Button vButton) {
-    	this.vButton = vButton;
-    }
+    public void setVisButton(Button vButton) { this.vButton = vButton; }
 
-    public void setSelect(boolean value) {
-    	selectMode = value;
-    }
+    public void setSelect(boolean value) { selectMode = value; }
+    
     public RouteVisualization getVisualization() { return rv; }
 
-
-
     public GoogleMap getMap() { return this.map; }
+
     public void setMap(GoogleMap map) { this.map = map; }
+    
     public void setSelectManager(SelectManager selectManager) { this.selectManager = selectManager; }
 
     public void putMarker(geography.GeographicPoint key, Marker value) {
@@ -87,8 +80,8 @@ public class MarkerManager {
 
     }
 
-    /** Used to initialize new RouteVisualization object
-     *
+    /** 
+     * Used to initialize new RouteVisualization object
      */
     public void initVisualization() {
     	rv = new RouteVisualization(this);
@@ -99,7 +92,6 @@ public class MarkerManager {
     	rv = null;
     }
 
-    // TODO -- protect against this being called without visualization built
     public void startVisualization() {
     	if(rv != null) {
 	    	rv.startVisualization();
@@ -131,9 +123,6 @@ public class MarkerManager {
         marker.setVisible(true);
     }
 
-    /**
-     * TODO -- Might need to create all new markers and add them??
-     */
     public void restoreMarkers() {
     	Iterator<geography.GeographicPoint> it = markerMap.keySet().iterator();
         while(it.hasNext()) {

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /** A class that implements a directed graph. 
  * The graph may have self-loops, parallel edges. 
@@ -96,7 +95,6 @@ public class GraphAdjList extends Graph {
 	 * @return List<Integer> a list of indices of vertices.  
 	 */		
 	 public List<Integer> getDistance2(int v) {
-		 // XXX: Implement this method in week 2
 		 List<Integer> secondNeighbors = new ArrayList<>();
 		 if (v < getNumVertices()) { //vertex exists
 			 Iterator<Integer> NeighborIndices = adjListsMap.get(v).iterator();

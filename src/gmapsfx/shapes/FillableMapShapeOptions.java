@@ -21,7 +21,7 @@ package gmapsfx.shapes;
  * @author Geoff Capper
  * @param <T>
  */
-public abstract class FillableMapShapeOptions<T extends FillableMapShapeOptions> extends MapShapeOptions<T> {
+public abstract class FillableMapShapeOptions<T extends FillableMapShapeOptions<T>> extends MapShapeOptions<T> {
     
     private String fillColor;
     private double fillOpacity;

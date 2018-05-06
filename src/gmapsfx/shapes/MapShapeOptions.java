@@ -25,7 +25,7 @@ import gmapsfx.javascript.object.GMapObjectType;
  * @author Geoff Capper
  * @param <T>
  */
-public abstract class MapShapeOptions<T extends MapShapeOptions> extends JavascriptObject {
+public abstract class MapShapeOptions<T extends MapShapeOptions<T>> extends JavascriptObject {
     
     private boolean clickable;
     private boolean draggable;

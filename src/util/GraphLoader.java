@@ -226,7 +226,6 @@ public class GraphLoader
 		int sourceIndex;
 		int destinationIndex;
 		
-		int lineCount = 0; //for debugging
 		
 		//Initialize vertex label HashMap in graph
 		graph.initializeLabels();
@@ -260,7 +259,6 @@ public class GraphLoader
             		}
             		graph.addEdge(sourceIndex, destinationIndex);
             	}
-            	lineCount ++;
 //           }
     		reader.close();
 		} catch (IOException e) {

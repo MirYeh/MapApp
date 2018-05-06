@@ -18,8 +18,6 @@ package gmapsfx.javascript;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import netscape.javascript.JSObject;
 
 /**
@@ -228,7 +226,7 @@ public class JavascriptObject {
                 jsArgs[i] = args[i];
             }
         }
-        return checkUndefined(jsObject.call(function, (Object[]) jsArgs));
+        return checkUndefined(jsObject.call(function, jsArgs));
     }
 
     /**

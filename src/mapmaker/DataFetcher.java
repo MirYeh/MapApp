@@ -7,7 +7,9 @@ import java.net.URL;
 import javax.json.*;
 
 public class DataFetcher {
-    private final String[] HIGHWAYS = {"motorway", "trunk", "primary", "secondary", "tertiary", "unclassified", "residential", "motorway_link", "trunk_link", "primary_link", "secondary_link", "tertiary_link", "living_street"};
+    private final String[] HIGHWAYS = {"motorway", "trunk", "primary", "secondary", "tertiary", 
+    		"unclassified", "residential", "motorway_link", "trunk_link", "primary_link", 
+    		"secondary_link", "tertiary_link", "living_street"};
 
     private String query;
     public DataFetcher(float[] bounds) {
