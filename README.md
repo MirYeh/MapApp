@@ -18,9 +18,9 @@ The application implements Breadth-First, Dijkstra and A* search algorithms and 
 
 ## Getting Started
 
-1. [Download and extract zip file](www.google.com)
+1. [Download and extract zip file](https://github.com/MirYeh/MapApp/blob/master/extra/MapApp.zip)
 2. Run jar file
 3. Start planning you route!
 
-[![Map App Demo](https://cdn4.iconfinder.com/data/icons/iconsimple-logotypes/512/github-512.png)](https://www.youtube.com/watch?v=b0jn0Q3SCyw) 
+[![Map App Demo](https://github.com/MirYeh/MapApp/blob/master/extra/demo%20screenshot.png)](https://www.youtube.com/watch?v=b0jn0Q3SCyw) 
 
