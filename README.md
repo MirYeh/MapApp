@@ -1,6 +1,6 @@
 # MapApp
 
-A route planning desktop application that allows users to navigate real environments using Google Maps API.
+A desktop application for visualizing various route search algorithms on top of the Google Maps platform.
 
 The application implements Breadth-First, Dijkstra and A* search algorithms and allows to visualize the search in order to see the different approach each search takes.
 
