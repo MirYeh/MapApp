@@ -1,7 +1,9 @@
 package application.services;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import application.DataSet;
@@ -135,13 +137,14 @@ public class GeneralService {
 
         Alert fetchingAlert = MapApp.getInfoAlert("Loading: ", "Fetching data for current map area...");
         task.setOnSucceeded( e -> {
-          if(task.getValue().equals(fName)) {
-               addDataFile(fName);
-               cb.getItems().add(new DataSet(fName));
-               if(fetchingAlert.isShowing())
-            	   fetchingAlert.close();
-               MapApp.showInfoAlert("Fetch completed: ", "Data set: \"" + fName + "\" written to file!");
-
+        	if(fetchingAlert.isShowing())
+        		fetchingAlert.close();
+        	if(task.getValue().equals(fName)) {
+        		addDataFile(fName);
+        		cb.getItems().add(new DataSet(fName));
+        		if(fetchingAlert.isShowing())
+        			fetchingAlert.close();
+        		MapApp.showInfoAlert("Fetch completed: ", "Data set: \"" + fName + "\" written to file!");
            }
            button.setDisable(false);
         });
