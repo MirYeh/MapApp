@@ -18,9 +18,15 @@ The application implements Breadth-First, Dijkstra and A* search algorithms and 
 
 ## Getting Started
 
-1. [Download and extract zip file](https://github.com/MirYeh/MapApp/raw/master/extra/MapApp.zip)
-2. Run jar file
-3. Start planning your route!
+1. Download or clone repository.
+2. Add your generated [Google Maps API Key](https://developers.google.com/maps/documentation/javascript/get-api-key) to [index.html](./blob/master/src/html/index.html):
+```
+<script src="https://maps.googleapis.com/maps/api/js?key=INSERT_KEY_HERE&callback=initMap"></script>
+```
+3. Build the project with Apache Maven:
+```
+mvn package
+```
+4. Start planning your route!
 
-[![Map App Demo](https://github.com/MirYeh/MapApp/blob/master/extra/demo%20screenshot.png)](https://www.youtube.com/watch?v=b0jn0Q3SCyw) 
-
+[![Map App Demo](../master/extra/demo%20screenshot.png "Map App Demo")](https://www.youtube.com/watch?v=b0jn0Q3SCyw) 
