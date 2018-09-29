@@ -1,6 +1,7 @@
 package application.controllers;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.FileReader;
 
@@ -51,6 +52,16 @@ public class FetchController {
     }
 
     private void loadDataSets() {
+    	//check if path exists
+    	File path = new File(persistPath);
+    	if (! path.exists()) {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Warning");
+			alert.setHeaderText(String.format("Missing Path '%s'", persistPath));
+			alert.setContentText("Unable to fetch data");
+			alert.showAndWait();
+    	}
+    	
     	try (BufferedReader reader = new BufferedReader(new FileReader(persistPath))){
             String line = reader.readLine();
             while(line != null) {
